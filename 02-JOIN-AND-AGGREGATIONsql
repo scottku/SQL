@@ -134,3 +134,60 @@ WHERE emp.manager_id = man.employee_id; -- 1명 실종
 SELECT emp.employee_id, emp.first_name, emp.manager_id, man.first_name
 FROM employees emp LEFT OUTER JOIN employees man
                     ON emp.manager_id = man.employee_id; -- 107명 전원 확인
+                    
+-- 연습문제 02
+-- 01
+SELECT employee_id, first_name, last_name, department_name
+FROM employees emp JOIN departments  dept ON emp.department_id = dept.department_id 
+ORDER BY department_name, employee_id DESC;
+
+-- 02
+SELECT employee_id, first_name, salary, department_name, job_title
+FROM departments dept, employees emp ,jobs job
+WHERE dept.department_id = emp.department_id AND job.job_id = emp.job_id
+ORDER BY employee_id;
+
+-- 02-01
+SELECT employee_id, first_name, salary, department_name, job_title
+FROM jobs job, employees emp LEFT OUTER JOIN departments dept ON dept.department_id = emp.department_id
+WHERE job.job_id = emp.job_id
+ORDER BY employee_id;
+
+-- 03
+SELECT loc.location_id, city, department_name, department_id
+FROM locations loc, departments dept
+WHERE loc.location_id = dept.location_id
+ORDER BY location_id ASC;
+
+-- 03-01
+SELECT loc.location_id, city, department_name, department_id
+FROM locations loc LEFT OUTER JOIN departments dept
+ON loc.location_id = dept.location_id
+ORDER BY location_id ASC;
+
+-- 04
+SELECT region_name, country_name
+FROM countries con, regions reg
+WHERE con.region_id = reg.region_id;
+
+-- 05
+SELECT emp1.employee_id, emp1.first_name, emp1.hire_date, emp2.first_name, emp2.hire_date
+FROM employees emp1 JOIN employees emp2
+ON emp1.manager_id = emp2.employee_id
+WHERE emp1.hire_date < emp2.hire_date;
+
+-- 06
+SELECT country_name, con.country_id, city, loc.location_id, department_name, department_id
+FROM departments dept, locations loc JOIN countries con ON loc.country_id = con.country_id
+WHERE dept.location_id = loc.location_id
+ORDER BY country_name;
+
+SELECT country_name, con.country_id, city, loc.location_id, department_name, department_id
+FROM departments dept JOIN (locations loc JOIN countries con ON loc.country_id = con.country_id)
+ON dept.location_id = loc.location_id
+ORDER BY country_name;
+
+-- 07
+SELECT emp.employee_id, first_name||' '||last_name, emp.job_id, start_date, end_date
+FROM employees emp JOIN job_history jh ON emp.employee_id = jh.employee_id
+WHERE jh.job_id = 'AC_ACCOUNT';

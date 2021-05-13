@@ -190,7 +190,7 @@ From employees
 Where salary Between 10000 And 14000;
 
 -- 06 (날짜 변환 필요)
-Select first_name, salary, hire_date, department_id
+Select first_name, salary, TO_CHAR(hire_date,'YYYY-MM'), department_id
 From employees
 Where department_id In(10, 90, 100);
 
@@ -345,4 +345,20 @@ SELECT first_name, department_id,
     END as team
 FROM employees
 ORDER BY team;
-    
+
+-- 연습문제 01 (이어서)
+-- 08
+SELECT * 
+FROM departments
+ORDER BY length(department_name);
+
+-- 09
+SELECT UPPER(country_name)
+FROM countries
+ORDER BY country_name;
+
+-- 10
+SELECT first_name, salary, REPLACE(phone_number,'.','-'), hire_date
+FROM employees
+WHERE hire_date <= TO_DATE('03/12/31','YY/MM/DD');
+

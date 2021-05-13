@@ -145,3 +145,117 @@ Where first_name Like '___a%';
 Select first_name
 From employees
 Where first_name Like '__a_';
+
+-- Order By (ASC, DESC)
+-- 부서 번호 오름차순으로 정렬 후 부서번호, 급여, 이름 출력
+Select department_id, salary, first_name
+From employees
+Order by department_id;
+
+-- 급여가 10000 이상인 직원의 이름을 급여 내림차순
+Select first_name, salary
+From employees
+Where salary >= 10000 Order By salary DESC;
+
+-- 부서번호 오름차순, 급여 내림차순, 이름
+Select department_id, salary, first_name
+From employees
+Order By department_id, salary DESC;
+
+-- practice 01
+-- 01
+Select first_name "이름", salary "월급", phone_number "전화번호", hire_date "입사일"
+From employees
+Order By hire_date;
+
+-- 02
+Select job_title, max_salary
+From jobs
+Order By max_salary DESC;
+
+-- 03
+Select first_name, manager_id, commission_pct, salary
+From employees
+Where (manager_id Is Not Null) And (commission_pct Is Null) And salary > 3000;
+
+-- 04
+Select job_title, max_salary
+From jobs
+Where max_salary >= 10000
+Order by max_salary DESC;
+
+-- 05
+Select first_name, salary, NVL(commission_pct, 0)
+From employees
+Where salary Between 10000 And 14000;
+
+-- 06 (날짜 변환 필요)
+Select first_name, salary, hire_date, department_id
+From employees
+Where department_id In(10, 90, 100);
+
+-- 07
+Select first_name, salary
+From employees
+Where first_name Like '%s%' Or first_name Like '%S%';
+
+-- 문자열 단일행 함수
+Select first_name, last_name, 
+    Concat(first_name, Concat(' ', last_name)), -- 결합
+    Initcap(first_name || ' ' || last_name), -- 첫 글자는 대문자로
+    Lower(first_name), -- 모두 소문자
+    Upper(first_name), -- 모두 대문자
+    LPAD(first_name, 20, '*'), -- 20자리 확보, 왼쪽을 *로 채움
+    RPAD(first_name, 20, '*') -- 20자리 확보, 오른쪽을 *로 채움
+From employees;
+
+Select '            Oracle          ',
+    '************Database**************'
+From dual;
+
+Select Ltrim('            Oracle          '), -- 왼쪽의 공백 제거
+    Rtrim('            Oracle          '), -- 오른쪽의 공백 제거
+    Trim('*' From  '************Database**************'), -- 양쪽의 지정된 문자 제거
+    SUBSTR('Oracle Database', 8, 4), -- 8번째 글자부터 4글자 
+    SUBSTR('Oracle Database', -8, 4) -- 뒤에서 8번째 글자부터 4글자
+From dual;
+
+-- 수치형 단일행 함수
+SELECT ABS(-3.14), -- 절대값
+    CEIL(3.14), -- 소숫점 올림
+    FLOOR(3.14), -- 소숫점 버림
+    MOD(7,3), -- 나머지
+    POWER(2, 4), -- 제곱
+    ROUND(3.5), -- 반올림
+    ROUND(3.4567, 2), -- 소숫점 2째자리까지 반올림으로 변환
+    TRUNC(3.5), -- 소숫점 아래 버림
+    TRUNC(3.4567, 2) -- 소숫점 2째자리까지 버림
+FROM dual;
+
+------------------------
+-- Date Format --
+------------------------
+
+-- 날짜 형식 확인
+SELECT * FROM nls_session_parameters
+Where parameter = 'NLS_DATE_FORMAT';
+
+-- 현재 날짜와 시간
+SELECT sysdate
+FROM dual; -- dual 가상 테이블로부터 확인
+
+SELECT sysdate
+FROM employees; -- 테이블로부터 받아오므로 테이블 내 행 갯수만큼 반환
+
+-- DATE 관련 함수
+SELECT sysdate, -- 현재 날짜와 시간
+    ADD_MONTHS(sysdate, 2), -- 2개월 후의 날짜
+    MONTHS_BETWEEN('99/12/31',sysdate), -- 1999년 12월 31일 ~ 현재까지의 달 수
+    NEXT_DAY(sysdate, 6), -- 현재 날짜 이후의 첫 번째 금요일(6)
+    ROUND(TO_DATE('2021-05-17', 'YYYY-MM-DD'), 'MONTH'), -- MONTH 정보로 반올림
+    TRUNC(TO_DATE('2021-05-17', 'YYYY-MM-DD'), 'MONTH') -- MONTH 정보로 버림
+FROM dual;
+
+-- 현재 날짜 기준, 입사한지 몇 개월이 지났는가?
+SELECT first_name, hire_date, ROUND(MONTHS_BETWEEN(sysdate, hire_date))
+FROM employees;

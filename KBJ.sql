@@ -88,6 +88,60 @@ Where department_id = 10;
 -- 급여가 14000이하 or 17000이상인 사원의 이름과 급여
 Select first_name, salary 
 From employees
-Where salary Between 1400 And 1700;
+Where salary <= 14000 or salary >= 17000;
 
+-- 여집합
+Select first_name, salary
+From employees
+Where Not (salary >= 14000 And salary <= 17000);
 
+-- 부서 id가 90 이상인 사원 중, 급여가 20000 이상인 사원
+Select *
+From employees
+Where department_id = 90 And salary >= 20000;
+
+-- Between
+-- 입사일이 07/01/01 ~ 07/12/31 구간에 포함된 사원
+Select first_name, hire_date
+From employees
+Where hire_date Between '07/01/01' And '07/12/31';
+
+-- In
+-- 부서 id가 10, 20, 40인 사원의 명단
+Select *
+From employees
+Where department_id In(10, 20, 40);
+
+-- Manager Id가 100, 120, 147인 사원의 명단 (비교 + 논리 연산자)
+Select *
+From employees
+Where manager_id = 100 Or
+manager_id = 120 Or manager_id = 147;
+
+-- In 연산자
+Select *
+From employees
+Where manager_id In (100, 120, 147);
+
+-- Like 검색
+-- % = 임의의 길이의 지정되지 않은 문자열
+-- _ = 한개의 임의의 문자
+-- 이름에 am을 포함한 사원의 이름과 급여
+Select first_name, salary
+From employees
+Where first_name Like '%am%';
+
+-- 이름의 두번재 글자가 a인 사람의 이름과 급여
+Select first_name, salary
+From employees
+Where first_name Like '_a%';
+
+-- 이름의 4번째 글자가 a인 사원의 이름
+Select first_name
+From employees
+Where first_name Like '___a%';
+
+-- 이름이 4글자인 사원 중에서 끝에서 두번째 글자가 a인 사원의 이름
+Select first_name
+From employees
+Where first_name Like '__a_';

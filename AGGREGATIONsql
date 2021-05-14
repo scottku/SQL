@@ -75,7 +75,7 @@ ORDER BY department_id;
 -- ROLL UP
 -- GROUP BY 절과 함께 사용
 -- 그룹핑된 결과에 대한 좀 더 상세한 요약 제공
--- 일종의 ITME Total 기능 수행
+-- 일종의 ITEM Total 기능 수행
 SELECT department_id, job_id, SUM(salary)
 FROM employees
 GROUP BY department_id, job_id
@@ -176,7 +176,7 @@ WHERE (department_id, salary) IN (SELECT department_id, MAX(salary)
                                   GROUP BY department_id)
 ORDER BY department_id;
 
--- 각 부서별로 최그 급여를 받는 사원의 목록 (table 조인 <임시테이블>)
+-- 각 부서별로 최고 급여를 받는 사원의 목록 (table 조인 <임시테이블>)
 SELECT emp.department_id, emp.employee_id, first_name, emp.salary
 FROM employees emp, (SELECT department_id, MAX(salary) salary
                       FROM employees

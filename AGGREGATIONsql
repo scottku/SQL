@@ -1,0 +1,186 @@
+-- AGGREGATION
+-- 여러 행을 입력으로 데이터를 집계하여 하나의 행으로 반환
+
+-- count : 갯수 세기
+-- employees 테이블에 몇 개의 레코드가 있나?
+SELECT COUNT(*) FROM employees;
+-- *로 카운트 -> 모든 레코드의 수
+-- 컬럼 이름 명시 -> null 값 제외
+SELECT COUNT(commission_pct) FROM employees;
+-- =
+SELECT COUNT(*) FROM employees
+WHERE commission_pct IS NOT NULL;
+
+-- 합계: SUM
+-- 사원들 급여 총합
+SELECT SUM(salary) FROM employees;
+
+-- 평균
+-- 사원들 급여 평균
+SELECT AVG(salary) FROM employees;
+
+-- 집계 함수는 null을 집계에서 제외
+-- 사원들이 받는 커미션 비율의 평균치
+SELECT AVG(commission_pct) FROM employees;  -- 22%
+-- 위 커리는 커미션을 받는 사원들의 커미션 평균치
+
+-- null을 0으로 치환 후 재집계
+SELECT AVG(NVL(commission_pct, 0)) FROM employees; -- 7%
+-- 집계함수 수행시 null(결측치) 값을 처리할 방식을 정책으로 결정 후 수행 필요
+
+-- 사원들이 받는 급여의 최소값, 최대값, 평균, 중앙값
+SELECT MAX(salary), MIN(salary), AVG(salary), MEDIAN(salary)
+FROM employees;
+
+-- 흔히 범하는 오류
+-- 부서별 평균 급여 산정
+SELECT department_id, AVG(salary) -- 단일 그룹의 집계함수가 아닙니다.
+FROM employees; -- department_id 는 단일 레코드로 집계 x -> 오류 발생
+
+SELECT department_id salary
+FROM employees
+ORDER BY department_id;
+
+-- 수정
+-- 그룹별 집계를 위해 GROUP BY 절 사용
+SELECT department_id, ROUND(AVG(salary), 2)
+FROM employees
+GROUP BY department_id
+ORDER BY department_id;
+
+-- 집계 함수를 사용한 쿼리문의 SELECT 컬럼 목록에는
+-- grouping에 참여한 필드 OR 집계 함수만 올 수 있다.
+
+-- Having 절
+-- 평균 급여가 7000 이상인 부서만
+SELECT department_id, AVG(salary)
+FROM employees
+WHRE AVG(salary) >= 7000 -- WHERE 절은 GROUP BY와 집계 작업이 일어나기 이전에 체크
+GROUP BY department_id;
+
+-- 집계 함수 실행 이전에 WHERE 절의 조건을 검사
+-- 집계 함수 컬럼은 WHERE 절에서 사용할 수 없음
+-- 집계 이후에 조건 검사는 HAVING 절로 수행
+
+-- 수정된 쿼리
+SELECT department_id, AVG(salary)
+FROM employees
+GROUP BY department_id
+  HAVING AVG(salary) >= 7000 -- 집계 이후 조건 검사
+ORDER BY department_id;
+
+--------------
+-- 분석 함수
+
+-- ROLL UP
+-- GROUP BY 절과 함께 사용
+-- 그룹핑된 결과에 대한 좀 더 상세한 요약 제공
+-- 일종의 ITME Total 기능 수행
+SELECT department_id, job_id, SUM(salary)
+FROM employees
+GROUP BY department_id, job_id
+ORDER BY department_id, job_id;
+
+-- ROLL UP으로 ITEM TOTAL 출력
+SELECT department_id, job_id, SUM(salary)
+FROM employees
+GROUP BY ROLLUP(department_id, job_id)
+ORDER BY department_id;
+
+-- CUBE
+-- Cross Tab에 의한 SUmmary 함께 추출
+-- ROLLUP 함수에 의해 제공되는 ITEM Total과 함께
+-- Column Total 값을 함께 제공
+SELECT department_id, job_id, SUM(salary)
+FROM employees
+GROUP BY CUBE(department_id, job_id)
+ORDER BY department_id;
+
+----------------
+-- SUBQUERY
+----------------
+-- 하나의 SQL 내부에서 다른 SQL을 포함하는 형태
+-- 임시로 테이블 구성, 임시결과를 바탕으로 최종 쿼리를 수행
+
+-- 사원들의 급여 중앙값보다 많은 급여를 받는 직원들
+-- 1. 급여의 중간값
+-- 2. 중간값보다 많은 급여를 받는 직원
+
+-- 급여의 중간값 확인
+SELECT MEDIAN(salary) FROM employees; -- 6200
+-- 이 결과보다 많은 급여를 받는 직원 추출 쿼리
+SELECT first_name, salary
+FROM employees
+WHERE salary > 6200
+ORDER BY salary DESC;
+-- 두 쿼리 합성
+SELECT first_name, salary
+FROM employees
+WHERE salary > (SELECT MEDIAN(salary) FROM employees)
+ORDER BY salary DESC;
+
+SELECT first_name, hire_date FROM employees;
+SELECT first_name, hire_date FROM employees
+WHERE hire_date > (SELECT hire_date FROM employees WHERE first_name = 'Susan'); --02/06/07
+
+-- 단일행 서브쿼리
+-- 서브 쿼리의 결과 단일 행인 경우
+-- 단일행 연산자 : =, <, >=, <> 등
+-- 급여를 가장 적게 받는 사람의 이름, 급여, 사원 번호
+SELECT first_name, salary, employee_id
+FROM employees
+WHERE salary = (SELECT MIN(salary) FROM employees);
+
+-- 평균 급여보다 적게 받는 사원의 이름, 급여
+SELECT first_name, salary
+FROM employees
+WHERE salary < (SELECT ROUND(AVG(salary)) FROM employees);
+
+-- 다중행 서브쿼리
+-- 서브 쿼리의 결과가 여러 행인 경우 -> 단순 비교 연산자 수행 불가
+-- 집합 연산에 곤련된 IN, ANY, ALL, EXSIST 등 이용
+
+SELECT salary FROM employees WHERE department_id = 110; -- 12008, 8300
+SELECT first_name, salary 
+FROM employees 
+WHERE salary IN (SELECT salary FROM employees WHERE department_id = 110);
+
+SELECT first_name, salary
+FROM employees
+WHERE salary > ALL (SELECT salary FROM employees WHERE department_id = 110);
+
+SELECT first_name, salary
+FROM employees
+WHERE salary > ANY(SELECT salary FROM employees WHERE department_id = 110);
+
+-- Correlated Query
+-- 바깥쪽 쿼리(주 쿼리)와 안쪽 쿼리(서브 쿼리)가 서로 연관된 쿼리
+SELECT first_name, salary, department_id
+FROM employees outer
+WHERE salary > (SELECT AVG(salary) FROM employees
+                  WHERE department_id = outer.department_id);
+-- 자신이 속한 부서의 평균 급여보다 많이 받는 직원 목록을 뽑아온다.
+
+-- 서브 쿼리 연습
+-- 각 부서별 최고 급여를 받는 사원의 목록
+-- 1. 각 부서의 최고 급여 테이블
+SELECT department_id, MAX(salary)
+FROM employees
+GROUP BY department_id
+ORDER BY department_id;
+-- 2. 위 쿼리에서 나온 department_id, salary max 값을 비교
+SELECT department_id, employee_id, first_name, salary
+FROM employees
+WHERE (department_id, salary) IN (SELECT department_id, MAX(salary)
+                                  FROM employees
+                                  GROUP BY department_id)
+ORDER BY department_id;
+
+-- 각 부서별로 최그 급여를 받는 사원의 목록 (table 조인 <임시테이블>)
+SELECT emp.department_id, emp.employee_id, first_name, emp.salary
+FROM employees emp, (SELECT department_id, MAX(salary) salary
+                      FROM employees
+                      GROUP BY department_id) sal
+WHERE emp.department_id = sal.department_id
+  AND emp.salary = sal.salary
+ORDER BY department_id;

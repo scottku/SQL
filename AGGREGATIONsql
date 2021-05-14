@@ -184,3 +184,87 @@ FROM employees emp, (SELECT department_id, MAX(salary) salary
 WHERE emp.department_id = sal.department_id
   AND emp.salary = sal.salary
 ORDER BY department_id;
+
+-------------
+--- TOP-K QUERY
+-------------
+-- rownum : 쿼리 질의 수행결과에 의한 가상의 컬럼 -> 쿼리 결과의 순서 반환
+
+-- 2007년 입사자 중, 연봉 순위 5위 추출
+SELECT rownum, first_name, salary
+FROM (SELECT * FROM employees WHERE hire_date LIKE '07%' ORDER BY salary DESC)
+WHERE rownum <= 5;
+
+---------------
+-- 집합 연산
+---------------
+
+SELECT first_name, salary, hire_date
+FROM employees
+WHERE hire_date < '05/01/01'; -- 2005년 01월 01일 이전 입사자(24명)
+
+SELECT first_name, salary, hire_date
+FROM employees
+WHERE salary > 12000; -- 12000 초과한 급여를 받는 사원(8명)
+
+-- 입사일이 05년 1월 1일 이전이고 급여가 12000을 초과한 사원 (교집합)
+SELECT first_name, salary, hire_date
+FROM employees
+WHERE hire_date < '05/01/01'
+INTERSECT -- 교집합 연산
+SELECT first_name, salary, hire_date
+FROM employees
+WHERE salary > 12000;
+
+-- 입사일이 '05/01/01' 이전이거나 급여가 12000 초과한 사원 (합집합)
+SELECT first_name, salary, hire_date
+FROM employees
+WHERE hire_date < '05/01/01'
+-- UNION -- 합집합 연산
+UNION ALL -- 합집합 연산(중복 제거 x)
+SELECT first_name, salary, hire_date
+FROM employees
+WHERE salary > 12000
+ORDER BY first_name;
+
+-- 입사일이 '05/01/01' 이전인 사원 중에서 급여가 12000 초과한 사원을 제외 (차집합)
+SELECT first_name, salary, hire_date
+FROM employees
+WHERE hire_date < '05/01/01'
+MINUS -- 차집합 연산
+SELECT first_name, salary, hire_date
+FROM employees
+WHERE salary > 12000
+ORDER BY salary DESC;
+
+----------
+-- RANK 
+----------
+SELECT first_name, salary, 
+  RANK() OVER(ORDER BY salary DESC) as rank, -- 중복 순위는 건너뛰고 출력
+  DENSE_RANK() OVER(ORDER BY salary DESC) as "DENSE RANK", -- 중복 순위 상관없이 순서대로 출력
+  ROW_NUMBER() OVER(ORDER BY salary DESC) as "ROW NUMBER" -- RANK가 출력된 레코드 순서
+FROM employees;
+
+---------- 
+-- 계층형 쿼리0
+----------
+-- ORACLE : 질의 결과를 TREE 형태의 구조로 출력
+-- 현재 employees 테이블을 이용해 조직도를 출력하자
+SELECT employeeI,first_name, manager_id
+FROM meployees;
+
+SELECT level, employee_id, first_name, manager_id
+FROM employees
+START WITH manager_id IS NULL -- ROOT 노드의 조건
+CONNECT BY PRIOR employee_id = manager_id
+ORDER BY level;
+
+-- JOIN을 이용하여 manager의 이름까지 확인
+SELECT level, emp.employee_id, emp.first_name||' '||emp.last_name,
+  emp.manager_id, man.employee_Id, man.first_name||' '||man.last_name
+FROM employees emp LEFT OUTER JOIN employees man
+                                ON emp.manager_id = man.employee_id
+START WITH emp.manager_id IS NULL
+CONNECT BY PRIOR emp.employee_id = emp.manager_id
+ORDER BY level;

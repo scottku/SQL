@@ -59,3 +59,43 @@ UPDATE author SET author_desc = '알쓸신잡 출연'
 WHERE author_id = 2;
 
 SELECT * FROM author;
+
+-- 연습
+CREATE TABLE emp123 AS
+    (SELECT * FROM employees
+        WHERE department_id IN (10, 20, 30));
+DESC emp123;
+SELECT first_name, salary, department_id FROM emp123;
+
+-- 부서가 30인 직원들의 급여를 10% 인상
+UPDATE emp123
+SET salary = salary * 1.1
+WHERE department_id = 30;
+
+SELECT first_name, salary, department_id, job_id FROM emp123;
+
+ROLLBACK;
+
+-- DELETE : 테이블로부터 레코드 삭제
+SELECT * FROM emp123;
+DELETE FROM emp123;
+SELECT * FROM emp123; -- WHERE 절 없이 DELETE 수행 시 모든 레코드 삭제
+ROLLBACK;
+SELECT * FROM emp123;
+-- job_id가 PU로 시작하는 레코드 삭제
+DELETE FROM emp123
+WHERE job_id LIKE 'PU%';
+SELECT * FROM emp123;
+ROLLBACK;
+
+-- DELETE vs TRUNCATE
+-- DELETE : Transaction의 대상 -> 롤백 가능
+-- TRUNCATE : Transaction의 대상 아님 -> 롤백 불가
+DELETE FROM emp123;
+ROLLBACK;
+SELECT * FROM emp123;
+
+TRUNCATE TABLE emp123;
+SELECT * FROM emp123;
+ROLLBACK;
+SELECT * FROM emp123; -- 롤백 적용 안됨

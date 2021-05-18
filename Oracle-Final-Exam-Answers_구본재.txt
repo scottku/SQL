@@ -1,0 +1,43 @@
+클라우드 기반 빅데이터 서비스 개발자 양성과정
+Oracle 시험 답안지
+
+제출자: 구본재
+
+
+-- A01.
+CREATE USER C##BITUSER IDENTIFIED BY "BITUSER";
+
+-- A02.
+GRANT CONNECT, RESOURCE TO C##BITUSER;
+
+-- A03.
+테이블 당 하나만 정의 가능하며 각 행을 고유하게 식별하는 역할을 담당한다.
+
+-- A04.
+JOIN등으로 다른 데이터베이스와 관계를 맺는 경우, 다른 테이블의 PK를 참조하는 열이 FK이며 FK를 포함하는 테이블이 자식 테이블이다. 
+
+-- A05.
+Transaction은 명령어들의 집합을 가르킨다. 이 명령어들은 사용자가 임의로 묶을 수 있으며 한 Transaction에서는 All or Nothing 방식으로 모든 명령어가 문제 없이 처리되어야 정상적으로 종료되고 명령어가 하나라도 문제가 있다면 진행되었던 모든 명령어를 취소하고 다시 원상태로 돌아간다. 데이터베이스에서 특정 부분에 문제가 있어 명령어가 수행되지 않았을 때 그 전 명령어들이 수행이 취소되지 않는다면 데이터 무결성에 영향을 미친다. ATM기에 현금이 없는데 고객의 카드에 돈이 있으니 출금 명령만 수행한다면 고객의 카드에서는 돈이 빠져나가는데 돈을 받지 못하는 상황이 발생할 것이다. 
+COMMIT은 Transaction의 끝과 새로운 시작을 나타낸다. COMMIT 이전의 Transaction은 저장하고 새로운 Transaction을 만든다는 의미이다.
+ROLLBACK은 진행하는 Transaction을 취소하고 다시 처음으로 돌아가거나 SavePoint 위치의 상태로 되돌아가는데 사용된다.
+
+-- A06.
+SELECT last_name, salary, department_name FROM employees emp, departments dept
+WHERE commission_pct IS NOT NULL AND emp.department_id = dept.department_id;
+
+-- A07.
+SELECT last_name, salary, job_id FROM employees
+WHERE  manager_id IN (SELECT employee_id FROM employees
+                        WHERE last_name = 'King');
+
+-- A08.
+SELECT last_name, salary FROM employees emp1
+WHERE emp1.salary >= (SELECT salary FROM employees emp2 WHERE emp1.manager_id = emp2.employee_id);
+
+-- A09.
+SELECT MIN(salary), MAX(salary), SUM(salary), ROUND(AVG(salary)) FROM employees;
+
+-- A10.
+SELECT last_name, salary FROM employees emp1
+WHERE emp1.salary < (SELECT AVG(salary) FROM employees emp2 
+                        WHERE emp1.department_id = emp2.department_id);
